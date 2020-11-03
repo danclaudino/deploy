@@ -95,5 +95,250 @@ and the
 <span class=n>kernel</span><span class=o>.</span><span class=n>print_kernel</span><span class=p>(</span><span class=n>q</span><span class=p>,</span> <span class=mf>2.2</span><span class=p>)</span>
 <span class=n>n_inst</span> <span class=o>=</span> <span class=n>kernel</span><span class=o>.</span><span class=n>n_instructions</span><span class=p>(</span><span class=n>q</span><span class=p>,</span> <span class=mf>2.2</span><span class=p>)</span>
 
-</code></pre></div></td></tr></table><p>Now we will&mldr;</p><h2 id=xasm>XASM&nbsp;<a class=headline-hash href=#xasm>¶</a></h2><h2 id=openqasm>OpenQasm&nbsp;<a class=headline-hash href=#openqasm>¶</a></h2><h2 id=unitary-matrix>Unitary Matrix&nbsp;<a class=headline-hash href=#unitary-matrix>¶</a></h2><h2 id=python>Python&nbsp;<a class=headline-hash href=#python>¶</a></h2><div class=edit-meta><br><a href=https://github.com/aide-qc/deploy//edit/master/website/content/users/quantum_kernels.md class=edit-page><i class="fas fa-pen-square"></i>Edit on GitHub</a></div><nav class=pagination><a class="nav nav-prev" href=/deploy/users/qjit/ title="Quantum JIT (QJIT)"><i class="fas fa-arrow-left" aria-hidden=true></i>Prev - Quantum JIT (QJIT)</a>
-<a class="nav nav-next" href=/deploy/users/remote_qpu_creds/ title="Remote QPU Credentials">Next - Remote QPU Credentials <i class="fas fa-arrow-right" aria-hidden=true></i></a></nav><footer><p class=powered>Powered by <a href=https://gohugo.io>Hugo</a>. Theme by <a href=https://themes.gohugo.io/hugo-theme-techdoc/>TechDoc</a>. Designed by <a href=https://github.com/thingsym/hugo-theme-techdoc>Thingsym</a>.</p></footer></main><div class=sidebar><nav class=slide-menu><ul><li><a href=https://aide-qc.github.io/deploy>Home</a></li><li class=has-sub-menu><a href=/deploy/background/>Background<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/background/qcor/>QCOR C++ Compiler and JIT Engine</a></li><li><a href=/deploy/background/xacc/>XACC Quantum Programming Framework</a></li><li><a href=/deploy/background/project/></a></li></ul></li><li class=has-sub-menu><a href=/deploy/developers/>Developer Guide<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/developers/implement_optimizer/>Implement a new Optimizer</a></li><li><a href=/deploy/developers/clang_syntax/>QCOR Clang Syntax Handler</a></li></ul></li><li class=has-sub-menu><a href=/deploy/getting_started/>Getting Started<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/getting_started/Faq/>Frequently Asked Questions</a></li><li><a href=/deploy/getting_started/build_from_source/>Build Everything from Source</a></li></ul></li><li class="parent has-sub-menu"><a href=/deploy/users/>User Guide<span class="mark opened">-</span></a><ul class=sub-menu><li><a href=/deploy/users/hello_world/>Hello World</a></li><li><a href=/deploy/users/pass_manager/>Pass Manager</a></li><li><a href=/deploy/users/qjit/>Quantum JIT (QJIT)</a></li><li class=active><a href=/deploy/users/quantum_kernels/>Quantum Kernels</a></li><li><a href=/deploy/users/remote_qpu_creds/>Remote QPU Credentials</a></li><li><a href=/deploy/users/tnqvm/>Tensor Network Quantum Virtual Machine</a></li><li><a href=/deploy/users/using_optimizer/>Using an Optimizer</a></li></ul></li></ul></nav><div class=sidebar-footer></div></div></div><a href=# id=backtothetop-fixed class=backtothetop data-backtothetop-duration=600 data-backtothetop-easing=easeOutQuart data-backtothetop-fixed-fadein=1000 data-backtothetop-fixed-fadeout=1000 data-backtothetop-fixed-bottom=10 data-backtothetop-fixed-right=20><span class="fa-layers fa-fw"><i class="fas fa-circle"></i><i class="fas fa-arrow-circle-up"></i></span></a></div></body></html>
+</code></pre></div></td></tr></table><p>Now we turn our attention to the different ways one might write quantum kernel function bodies, i.e. the current set of low-level and high-level quantum DSLs that we support in the AIDE-QC programming stack.</p><h2 id=a-idxasma-xasm><a id=xasm></a>XASM&nbsp;<a class=headline-hash href=#a-idxasma-xasm>¶</a></h2><p>The default language in C++ for quantum kernels is based on the XACC XASM quantum assembly language. This language provides a source-level representation of the internal XACC quantum intermediate representation (IR). Out of all the quantum languages supported by AIDE-QC, the XASM language supports the most classical C++ control flow mechanisms (<code>for</code>, <code>if</code>, etc.). It also allows mixing certain classical statements that help in constructing the quantum kernel most efficiently, such as simple variable assignment and use. This language supports most one and two qubit gate instructions, and rotation gates can be parameterized by incoming kernel arguments.</p><p>Let&rsquo;s turn our attention to some examples. First we look at an IBM-style
+<a href=https://www.nature.com/articles/nature23879>hardware efficient ansatz</a>
+to demonstrate the utility of existing C++ control flow intermixed with quantum instructions.</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>hwe</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=kt>double</span><span class=o>&gt;</span> <span class=n>x</span><span class=p>,</span> <span class=k>const</span> <span class=kt>int</span> <span class=n>layers</span><span class=p>,</span>
+                 <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>pair</span><span class=o>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=o>&gt;&gt;</span> <span class=n>cnot_coupling</span><span class=p>)</span> <span class=p>{</span>
+  <span class=c1>// Get the number of qubits
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>n_qubits</span> <span class=o>=</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>();</span>
+  <span class=c1>// Loop over layers
+</span><span class=c1></span>  <span class=k>for</span> <span class=p>(</span><span class=k>auto</span> <span class=nl>layer</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>layers</span><span class=p>))</span> <span class=p>{</span>
+    <span class=c1>// Create first Rx Rz layer
+</span><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=k>auto</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>n_qubits</span><span class=p>))</span> <span class=p>{</span>
+      <span class=c1>// Shift the x vector idx based on the layer we are in
+</span><span class=c1></span>      <span class=k>auto</span> <span class=n>rx_xidx</span> <span class=o>=</span> <span class=n>layer</span> <span class=o>*</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>5</span> <span class=o>+</span> <span class=n>i</span><span class=p>;</span>
+      <span class=k>auto</span> <span class=n>rz_xidx</span> <span class=o>=</span> <span class=n>layer</span> <span class=o>*</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>5</span> <span class=o>+</span> <span class=n>i</span> <span class=o>+</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>();</span>
+      <span class=n>Rx</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>x</span><span class=p>[</span><span class=n>rx_xidx</span><span class=p>]);</span>
+      <span class=n>Rz</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>x</span><span class=p>[</span><span class=n>rz_xidx</span><span class=p>]);</span>
+    <span class=p>}</span>
+
+    <span class=c1>// Next set of angle indices will be shifted
+</span><span class=c1></span>    <span class=k>auto</span> <span class=n>shift</span> <span class=o>=</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>2</span><span class=p>;</span>
+
+    <span class=c1>// Apply the CNOTs
+</span><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=k>auto</span> <span class=p>[</span><span class=n>i</span><span class=p>,</span> <span class=n>j</span><span class=p>]</span> <span class=o>:</span> <span class=n>cnot_coupling</span><span class=p>)</span> <span class=p>{</span>
+      <span class=n>CX</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=n>j</span><span class=p>]);</span>
+    <span class=p>}</span>
+
+    <span class=c1>// Add the final layer of rotation gates
+</span><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=k>auto</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>n_qubits</span><span class=p>))</span> <span class=p>{</span>
+      <span class=c1>// Shift the idx based on the layer we are in
+</span><span class=c1></span>      <span class=k>auto</span> <span class=n>rx1_xidx</span> <span class=o>=</span> <span class=n>layer</span> <span class=o>*</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>5</span> <span class=o>+</span> <span class=n>shift</span> <span class=o>+</span> <span class=n>i</span><span class=p>;</span>
+      <span class=k>auto</span> <span class=n>rz_xidx</span> <span class=o>=</span> <span class=n>layer</span> <span class=o>*</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>5</span> <span class=o>+</span> <span class=n>shift</span> <span class=o>+</span> <span class=n>i</span> <span class=o>+</span> <span class=n>n_qubits</span><span class=p>;</span>
+      <span class=k>auto</span> <span class=n>rx2_xidx</span> <span class=o>=</span> <span class=n>layer</span> <span class=o>*</span> <span class=n>n_qubits</span> <span class=o>*</span> <span class=mi>5</span> <span class=o>+</span> <span class=n>shift</span> <span class=o>+</span> <span class=n>i</span> <span class=o>+</span> <span class=mi>2</span> <span class=o>*</span> <span class=n>n_qubits</span><span class=p>;</span>
+      <span class=n>Rx</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>x</span><span class=p>[</span><span class=n>rx1_xidx</span><span class=p>]);</span>
+      <span class=n>Rz</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>x</span><span class=p>[</span><span class=n>rz_xidx</span><span class=p>]);</span>
+      <span class=n>Rx</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>x</span><span class=p>[</span><span class=n>rx2_xidx</span><span class=p>]);</span>
+    <span class=p>}</span>
+  <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></div><p>In the above example, one can see the breadth of programming expressions that can be leveraged to construct
+common quantum circuits. This example takes a number of non-trivial function arguments, and leverages them
+to construct a general hardware efficient circuit, parameterized on a vector of angles <code>x</code>. The use of
+nested for loops and C++-17 structured bindings provide an expressive kernel DSL for programming general
+parameterized quantum kernels. This example applies layers of rotation + entangling + rotation patterns using C++ for loops, variable assignment on the stack, and quantum instruction calls. These instructions are not imported or included from an external library, they are part of the language extension itself. One can now use this kernel or print it to a QASM-like string in the following way</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=p>...</span> <span class=n>with</span> <span class=n>the</span> <span class=n>above</span> <span class=n>kernel</span> <span class=n>definition</span> <span class=p>...</span>
+<span class=kt>int</span> <span class=n>main</span><span class=p>()</span> <span class=p>{</span>
+  <span class=c1>// Lets use 2 layers, 4 qubits, and nearest-neighbor coupling
+</span><span class=c1></span>  <span class=kt>int</span> <span class=n>layers</span> <span class=o>=</span> <span class=mi>2</span><span class=p>;</span>
+  <span class=k>auto</span> <span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>4</span><span class=p>);</span>
+  <span class=k>auto</span> <span class=n>x_init</span> <span class=o>=</span> <span class=n>random_vector</span><span class=p>(</span><span class=o>-</span><span class=mf>1.</span><span class=p>,</span> <span class=mf>1.</span><span class=p>,</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>()</span> <span class=o>*</span> <span class=n>layers</span> <span class=o>*</span> <span class=mi>5</span><span class=p>);</span>
+  <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>pair</span><span class=o>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=o>&gt;&gt;</span> <span class=n>coupling</span><span class=p>{{</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>},</span> <span class=p>{</span><span class=mi>1</span><span class=p>,</span><span class=mi>2</span><span class=p>},</span> <span class=p>{</span><span class=mi>2</span><span class=p>,</span><span class=mi>3</span><span class=p>}};</span>
+
+  <span class=c1>// Print the kernel to see it!
+</span><span class=c1></span>  <span class=n>hwe</span><span class=o>::</span><span class=n>print_kernel</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>cout</span><span class=p>,</span> <span class=n>q</span><span class=p>,</span> <span class=n>x_init</span><span class=p>,</span> <span class=n>layers</span><span class=p>,</span> <span class=n>coupling</span><span class=p>);</span>
+<span class=p>}</span>
+</code></pre></div><p>A more complicated example may be a kernel that generates a QAOA circuit based on
+a general cost Hamiltonian. Let&rsquo;s see how one might program that:</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>qaoa_ansatz</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>,</span> <span class=kt>int</span> <span class=n>n_steps</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=kt>double</span><span class=o>&gt;</span> <span class=n>gamma</span><span class=p>,</span>
+                         <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=kt>double</span><span class=o>&gt;</span> <span class=n>beta</span><span class=p>,</span> <span class=n>PauliOperator</span><span class=o>&amp;</span> <span class=n>cost_ham</span><span class=p>)</span> <span class=p>{</span>
+
+  <span class=c1>// Local Declarations
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>nQubits</span> <span class=o>=</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>();</span>
+  <span class=kt>int</span> <span class=n>gamma_counter</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+  <span class=kt>int</span> <span class=n>beta_counter</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+
+  <span class=c1>// Start off in the uniform superposition
+</span><span class=c1></span>  <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>nQubits</span><span class=p>))</span> <span class=p>{</span>
+    <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+  <span class=p>}</span>
+
+  <span class=c1>// Get all non-identity hamiltonian terms
+</span><span class=c1></span>  <span class=c1>// for the following exp(H_i) trotterization
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>cost_terms</span> <span class=o>=</span> <span class=n>cost_ham</span><span class=p>.</span><span class=n>getNonIdentitySubTerms</span><span class=p>();</span>
+
+  <span class=c1>// Loop over qaoa steps
+</span><span class=c1></span>  <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=nl>step</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>n_steps</span><span class=p>))</span> <span class=p>{</span>
+
+    <span class=c1>// Loop over cost hamiltonian terms
+</span><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>cost_terms</span><span class=p>.</span><span class=n>size</span><span class=p>()))</span> <span class=p>{</span>
+
+      <span class=c1>// for xasm we have to allocate the variables
+</span><span class=c1></span>      <span class=k>auto</span> <span class=n>cost_term</span> <span class=o>=</span> <span class=n>cost_terms</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+      <span class=k>auto</span> <span class=n>m_gamma</span> <span class=o>=</span> <span class=n>gamma</span><span class=p>[</span><span class=n>gamma_counter</span><span class=p>];</span>
+
+      <span class=c1>// trotterize
+</span><span class=c1></span>      <span class=n>exp_i_theta</span><span class=p>(</span><span class=n>q</span><span class=p>,</span> <span class=n>m_gamma</span><span class=p>,</span> <span class=n>cost_term</span><span class=p>);</span>
+
+      <span class=n>gamma_counter</span><span class=o>++</span><span class=p>;</span>
+    <span class=p>}</span>
+
+    <span class=c1>// Add the reference hamiltonian term
+</span><span class=c1></span>    <span class=c1>// H_ref = SUM_i X(i)
+</span><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>nQubits</span><span class=p>))</span> <span class=p>{</span>
+      <span class=k>auto</span> <span class=n>ref_ham_term</span> <span class=o>=</span> <span class=n>X</span><span class=p>(</span><span class=n>i</span><span class=p>);</span>
+      <span class=k>auto</span> <span class=n>m_beta</span> <span class=o>=</span> <span class=n>beta</span><span class=p>[</span><span class=n>beta_counter</span><span class=p>];</span>
+      <span class=n>exp_i_theta</span><span class=p>(</span><span class=n>q</span><span class=p>,</span> <span class=n>m_beta</span><span class=p>,</span> <span class=n>ref_ham_term</span><span class=p>);</span>
+      <span class=n>beta_counter</span><span class=o>++</span><span class=p>;</span>
+    <span class=p>}</span>
+  <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></div><p>Here one can see the usual use of C++ control flow to build up the QAOA circuit. The interesting part is the
+the non-trivial argument structure, whereby we are able to parameterize the kernel construction on the
+number of QAOA steps, gamma and beta parameter vectors, and the cost Hamiltonian itself, passed as a
+<a href=/deploy/users/operators/>PauliOperator</a>
+.</p><h2 id=a-idopenqasma-openqasm><a id=openqasm></a>OpenQasm&nbsp;<a class=headline-hash href=#a-idopenqasma-openqasm>¶</a></h2><p>The next quantum kernel language that the AIDE-QC stack supports is IBM&rsquo;s
+<a href=https://en.wikipedia.org/wiki/OpenQASM>OpenQasm</a>
+. Programmers can leverage this dialect by starting off the kernel with the <code>using qcor::openqasm</code> statement. Here is a simple example</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>bell</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>openqasm</span><span class=p>;</span>
+    <span class=n>h</span> <span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>];</span>
+    <span class=n>cx</span> <span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=mi>1</span><span class=p>];</span>
+    <span class=n>creg</span> <span class=n>c</span><span class=p>[</span><span class=mi>2</span><span class=p>];</span>
+    <span class=n>measure</span> <span class=n>q</span> <span class=o>-&gt;</span> <span class=n>c</span><span class=p>;</span>
+<span class=p>}</span>
+</code></pre></div><p>There are a lot of quantum circuit benchmarking activities that leverage pre-generated OpenQasm source files. External OpenQasm files can be integrated with quantum kernels through the usual C++ preprocessor:</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>grover_5</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>)</span> <span class=p>{</span>
+  <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>openqasm</span><span class=p>;</span>
+<span class=cp>#include</span> <span class=cpf>&#34;grover_5.qasm&#34;</span><span class=cp>
+</span><span class=cp></span><span class=p>}</span>
+</code></pre></div><p>This assumes a <code>grover_5.qasm</code> file is in the header search path.</p><p>One can also mix XASM and OpenQasm languages (actually you can mix any available language):</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>bell_multi</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>,</span> <span class=n>qreg</span> <span class=n>r</span><span class=p>)</span> <span class=p>{</span>
+  <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>]);</span>
+  <span class=n>CX</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=mi>1</span><span class=p>]);</span>
+
+  <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>openqasm</span><span class=p>;</span>
+
+  <span class=n>h</span> <span class=n>r</span><span class=p>[</span><span class=mi>0</span><span class=p>];</span>
+  <span class=n>cx</span> <span class=n>r</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>r</span><span class=p>[</span><span class=mi>1</span><span class=p>];</span>
+
+  <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>xasm</span><span class=p>;</span>
+  
+  <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>();</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+    <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+    <span class=n>Measure</span><span class=p>(</span><span class=n>r</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+  <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></div><p>Since XASM is the default language, you don&rsquo;t have to specify <code>using qcor::xasm</code> to start off, but if you do switch to another language, you will need to specify <code>using qcor::xasm</code> if you switch back to XASM.</p><h2 id=a-idmatrixa-unitary-matrix><a id=matrix></a>Unitary Matrix&nbsp;<a class=headline-hash href=#a-idmatrixa-unitary-matrix>¶</a></h2><p>The AIDE-QC quantum kernel programming model also supports novel circuit synthesis strategies that
+take as input a general unitary matrix describing the desired quantum operation. We have defined
+another kernel language extension that allows one to program at the unitary matrix level and indicate
+to the compiler that this is intended for decomposition into one and two qubit gates based on some
+internal synthesis strategy. Let&rsquo;s demonstrate this by defining a Toffoli gate as a unitary matrix:</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>ccnot</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>)</span> <span class=p>{</span>
+
+  <span class=c1>// set initial state to 111
+</span><span class=c1></span>  <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=nl>i</span> <span class=p>:</span> <span class=n>range</span><span class=p>(</span><span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>()))</span> <span class=p>{</span>
+    <span class=n>X</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+  <span class=p>}</span>
+
+  <span class=c1>// To program at the unitary matrix level,
+</span><span class=c1></span>  <span class=c1>// invoke the decompose call, indicating which 
+</span><span class=c1></span>  <span class=c1>// buffer to target, can optionally provide decomposition 
+</span><span class=c1></span>  <span class=c1>// algorithm name and an optimizer. 
+</span><span class=c1></span>  <span class=n>decompose</span> <span class=p>{</span>
+    <span class=c1>// Create the unitary matrix
+</span><span class=c1></span>    <span class=n>UnitaryMatrix</span> <span class=n>ccnot_mat</span> <span class=o>=</span> <span class=n>UnitaryMatrix</span><span class=o>::</span><span class=n>Identity</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span> <span class=mi>8</span><span class=p>);</span>
+    <span class=n>ccnot_mat</span><span class=p>(</span><span class=mi>6</span><span class=p>,</span> <span class=mi>6</span><span class=p>)</span> <span class=o>=</span> <span class=mf>0.0</span><span class=p>;</span>
+    <span class=n>ccnot_mat</span><span class=p>(</span><span class=mi>7</span><span class=p>,</span> <span class=mi>7</span><span class=p>)</span> <span class=o>=</span> <span class=mf>0.0</span><span class=p>;</span>
+    <span class=n>ccnot_mat</span><span class=p>(</span><span class=mi>6</span><span class=p>,</span> <span class=mi>7</span><span class=p>)</span> <span class=o>=</span> <span class=mf>1.0</span><span class=p>;</span>
+    <span class=n>ccnot_mat</span><span class=p>(</span><span class=mi>7</span><span class=p>,</span> <span class=mi>6</span><span class=p>)</span> <span class=o>=</span> <span class=mf>1.0</span><span class=p>;</span>
+  <span class=p>}</span>
+  <span class=p>(</span><span class=n>q</span><span class=p>);</span>
+
+  <span class=c1>// Add some measures
+</span><span class=c1></span>  <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>();</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+    <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+  <span class=p>}</span>
+<span class=p>}</span>
+<span class=kt>int</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+  <span class=c1>// allocate 3 qubits
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>3</span><span class=p>);</span>
+
+  <span class=c1>// By default this uses qfast with adam optimizer,
+</span><span class=c1></span>  <span class=c1>// print what the unitary decomp was
+</span><span class=c1></span>  <span class=n>ccnot</span><span class=o>::</span><span class=n>print_kernel</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>cout</span><span class=p>,</span> <span class=n>q</span><span class=p>);</span>
+
+  <span class=c1>// Run the unitary evolution.
+</span><span class=c1></span>  <span class=n>ccnot</span><span class=p>(</span><span class=n>q</span><span class=p>);</span>
+
+  <span class=c1>// should see 011 (msb) for toffoli input 111
+</span><span class=c1></span>  <span class=n>q</span><span class=p>.</span><span class=n>print</span><span class=p>();</span>
+<span class=p>}</span>
+</code></pre></div><p>Here we see that programmers declare a <code>decompose</code> scope, and inside define a unitary matrix using a provided
+<code>UnitaryMatrix</code> data structure (a <code>typedef</code> for <code>Eigen::MatrixXcd</code>). Once the matrix is defined, users close the <code>decompose</code> scope and provide at least the <code>qreg</code> to operate on. Programmers can also provide the circuit synthesis algorithm name (<code>QFAST</code> is the default) and a classical <code>Optimizer</code> to use for the decomposition strategy.</p><h2 id=a-idpyxasma-pythonic-xasm><a id=pyxasm></a>Pythonic XASM&nbsp;<a class=headline-hash href=#a-idpyxasma-pythonic-xasm>¶</a></h2><p>We have also defined a Pythonic version of the XASM language that provides quantum instructions alongside Pythonic control flow statements. This language was developed for our Python JIT compiler infrastructure, but can also be leveraged from C++ quantum kernel functions</p><table><tr><th>PyXASM Language - C++</th><th>PyXASM Language - Python</th></tr><tr><td><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=n>__qpu__</span> <span class=kt>void</span> <span class=nf>ghz</span><span class=p>(</span><span class=n>qreg</span> <span class=n>q</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>pyxasm</span><span class=p>;</span>
+    <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>])</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=n>in</span> <span class=n>range</span><span class=p>(</span><span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>()</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span><span class=o>:</span>
+        <span class=n>CX</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=o>+</span><span class=mi>1</span><span class=p>])</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=n>in</span> <span class=n>range</span><span class=p>(</span><span class=n>q</span><span class=p>.</span><span class=n>size</span><span class=p>())</span><span class=o>:</span>
+        <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+<span class=p>}</span>
+</code></pre></div></td><td><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=nd>@qjit</span>
+<span class=k>def</span> <span class=nf>ghz</span><span class=p>(</span><span class=n>q</span> <span class=p>:</span> <span class=n>qreg</span><span class=p>):</span>
+    <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>])</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()</span><span class=o>-</span><span class=mi>1</span><span class=p>):</span>
+        <span class=n>CX</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=o>+</span><span class=mi>1</span><span class=p>])</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()):</span>
+        <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+</code></pre></div></td></tr></table><p>One should be able to use this Pythonic XASM language in the same ways that the C++ dialect is used. Below we demonstrate a Pythonic quantum phase estimation kernel that makes use of kernel composition and <code>ctrl</code> versions of dependent kernels:</p><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=nd>@qjit</span>
+<span class=k>def</span> <span class=nf>iqft</span><span class=p>(</span><span class=n>q</span> <span class=p>:</span> <span class=n>qreg</span><span class=p>,</span> <span class=n>startIdx</span> <span class=p>:</span> <span class=nb>int</span><span class=p>,</span> <span class=n>nbQubits</span> <span class=p>:</span> <span class=nb>int</span><span class=p>):</span>
+    <span class=s2>&#34;&#34;&#34;
+</span><span class=s2>    Define an inverse quantum fourier transform kernel
+</span><span class=s2>    &#34;&#34;&#34;</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>nbQubits</span><span class=o>/</span><span class=mi>2</span><span class=p>):</span>
+        <span class=n>Swap</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>startIdx</span> <span class=o>+</span> <span class=n>i</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=n>startIdx</span> <span class=o>+</span> <span class=n>nbQubits</span> <span class=o>-</span> <span class=n>i</span> <span class=o>-</span> <span class=mi>1</span><span class=p>])</span>
+            
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>nbQubits</span><span class=o>-</span><span class=mi>1</span><span class=p>):</span>
+        <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>startIdx</span><span class=o>+</span><span class=n>i</span><span class=p>])</span>
+        <span class=n>j</span> <span class=o>=</span> <span class=n>i</span> <span class=o>+</span><span class=mi>1</span>
+        <span class=k>for</span> <span class=n>y</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>i</span><span class=p>,</span> <span class=o>-</span><span class=mi>1</span><span class=p>,</span> <span class=o>-</span><span class=mi>1</span><span class=p>):</span>
+            <span class=n>theta</span> <span class=o>=</span> <span class=o>-</span><span class=n>MY_PI</span> <span class=o>/</span> <span class=mi>2</span><span class=o>**</span><span class=p>(</span><span class=n>j</span><span class=o>-</span><span class=n>y</span><span class=p>)</span>
+            <span class=n>CPhase</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>startIdx</span><span class=o>+</span><span class=n>j</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=n>startIdx</span> <span class=o>+</span> <span class=n>y</span><span class=p>],</span> <span class=n>theta</span><span class=p>)</span>
+            
+    <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>startIdx</span><span class=o>+</span><span class=n>nbQubits</span><span class=o>-</span><span class=mi>1</span><span class=p>])</span>
+
+<span class=nd>@qjit</span>
+<span class=k>def</span> <span class=nf>oracle</span><span class=p>(</span><span class=n>q</span> <span class=p>:</span> <span class=n>qreg</span><span class=p>):</span>
+    <span class=s2>&#34;&#34;&#34;
+</span><span class=s2>    Define the oracle for our phase estimation algorithm,
+</span><span class=s2>    a T gate on the last qubit
+</span><span class=s2>    &#34;&#34;&#34;</span>
+    <span class=n>bit</span> <span class=o>=</span> <span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()</span><span class=o>-</span><span class=mi>1</span>
+    <span class=n>T</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>bit</span><span class=p>])</span>
+
+<span class=nd>@qjit</span>
+<span class=k>def</span> <span class=nf>qpe</span><span class=p>(</span><span class=n>q</span> <span class=p>:</span> <span class=n>qreg</span><span class=p>):</span>
+    <span class=s2>&#34;&#34;&#34;
+</span><span class=s2>    Run the quantum phase estimation kernel using the 
+</span><span class=s2>    ctrl of the oracle kernel and the pre-defined inverse 
+</span><span class=s2>    fourier transform. 
+</span><span class=s2>    &#34;&#34;&#34;</span>
+    <span class=n>nq</span> <span class=o>=</span> <span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()</span>
+    <span class=n>X</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>nq</span> <span class=o>-</span> <span class=mi>1</span><span class=p>])</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()</span><span class=o>-</span><span class=mi>1</span><span class=p>):</span>
+        <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+            
+    <span class=n>bitPrecision</span> <span class=o>=</span> <span class=n>nq</span><span class=o>-</span><span class=mi>1</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>bitPrecision</span><span class=p>):</span>
+        <span class=n>nbCalls</span> <span class=o>=</span> <span class=mi>2</span><span class=o>**</span><span class=n>i</span>
+        <span class=k>for</span> <span class=n>j</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>nbCalls</span><span class=p>):</span>
+            <span class=n>ctrl_bit</span> <span class=o>=</span> <span class=n>i</span>
+            <span class=n>oracle</span><span class=o>.</span><span class=n>ctrl</span><span class=p>(</span><span class=n>ctrl_bit</span><span class=p>,</span> <span class=n>q</span><span class=p>)</span>
+            
+    <span class=c1># Inverse QFT on the counting qubits</span>
+    <span class=n>iqft</span><span class=p>(</span><span class=n>q</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=n>bitPrecision</span><span class=p>)</span>
+            
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>bitPrecision</span><span class=p>):</span>
+        <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+
+<span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>4</span><span class=p>)</span>
+<span class=n>qpe</span><span class=p>(</span><span class=n>q</span><span class=p>)</span>
+<span class=k>print</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>counts</span><span class=p>())</span>
+<span class=k>assert</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>counts</span><span class=p>()[</span><span class=s1>&#39;100&#39;</span><span class=p>]</span> <span class=o>==</span> <span class=mi>1024</span><span class=p>)</span>
+</code></pre></div><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>python3 qpe.py -shots <span class=m>100</span>
+</code></pre></div><div class=edit-meta><br><a href=https://github.com/aide-qc/deploy//edit/master/website/content/users/quantum_kernels.md class=edit-page><i class="fas fa-pen-square"></i>Edit on GitHub</a></div><nav class=pagination><a class="nav nav-prev" href=/deploy/users/qjit/ title="Quantum JIT (QJIT)"><i class="fas fa-arrow-left" aria-hidden=true></i>Prev - Quantum JIT (QJIT)</a>
+<a class="nav nav-next" href=/deploy/users/remote_qpu_creds/ title="Remote QPU Credentials">Next - Remote QPU Credentials <i class="fas fa-arrow-right" aria-hidden=true></i></a></nav><footer><p class=powered>Powered by <a href=https://gohugo.io>Hugo</a>. Theme by <a href=https://themes.gohugo.io/hugo-theme-techdoc/>TechDoc</a>. Designed by <a href=https://github.com/thingsym/hugo-theme-techdoc>Thingsym</a>.</p></footer></main><div class=sidebar><nav class=slide-menu><ul><li><a href=https://aide-qc.github.io/deploy>Home</a></li><li class=has-sub-menu><a href=/deploy/background/>Background<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/background/qcor/>QCOR C++ Compiler and JIT Engine</a></li><li><a href=/deploy/background/xacc/>XACC Quantum Programming Framework</a></li><li><a href=/deploy/background/project/></a></li></ul></li><li class=has-sub-menu><a href=/deploy/developers/>Developer Guide<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/developers/implement_optimizer/>Implement a new Optimizer</a></li><li><a href=/deploy/developers/clang_syntax/>QCOR Clang Syntax Handler</a></li></ul></li><li class=has-sub-menu><a href=/deploy/getting_started/>Getting Started<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/getting_started/Faq/>Frequently Asked Questions</a></li><li><a href=/deploy/getting_started/build_from_source/>Build Everything from Source</a></li></ul></li><li class="parent has-sub-menu"><a href=/deploy/users/>User Guide<span class="mark opened">-</span></a><ul class=sub-menu><li><a href=/deploy/users/hello_world/>Hello World</a></li><li><a href=/deploy/users/operators/>Operators</a></li><li><a href=/deploy/users/pass_manager/>Pass Manager</a></li><li><a href=/deploy/users/qjit/>Quantum JIT (QJIT)</a></li><li class=active><a href=/deploy/users/quantum_kernels/>Quantum Kernels</a></li><li><a href=/deploy/users/remote_qpu_creds/>Remote QPU Credentials</a></li><li><a href=/deploy/users/tnqvm/>Tensor Network Quantum Virtual Machine</a></li><li><a href=/deploy/users/using_optimizer/>Using an Optimizer</a></li></ul></li></ul></nav><div class=sidebar-footer></div></div></div><a href=# id=backtothetop-fixed class=backtothetop data-backtothetop-duration=600 data-backtothetop-easing=easeOutQuart data-backtothetop-fixed-fadein=1000 data-backtothetop-fixed-fadeout=1000 data-backtothetop-fixed-bottom=10 data-backtothetop-fixed-right=20><span class="fa-layers fa-fw"><i class="fas fa-circle"></i><i class="fas fa-arrow-circle-up"></i></span></a></div></body></html>
