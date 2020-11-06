@@ -15,6 +15,7 @@ sudo apt-get update
 </span><span class=s2>  q.print();
 </span><span class=s2>}  &#34;</span> <span class=p>|</span> qcor -qpu qpp -shots <span class=m>1024</span> -x c++ -
 ./a.out
+</code></pre></div><p>If you are going to use the Python API, you&rsquo;ll need to export your <code>PYTHONPATH</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>export</span> <span class=nv>PYTHONPATH</span><span class=o>=</span>/usr/local/xacc:<span class=nv>$PYTHONPATH</span>
 </code></pre></div><h3 id=linux-x86_64-and-mac-os-x-1014-and-1015>Linux x86_64 and Mac OS X 10.14 and 10.15</h3><p>First install
 <a href=https://brew.sh>Homebrew</a>
 . The Homebrew homepage provides a single command to do this, it is extremely straightforward. Next. run the following command from your local terminal:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>/bin/bash -c <span class=s2>&#34;</span><span class=k>$(</span>curl -fsSL https://raw.githubusercontent.com/aide-qc/deploy/master/aide_qc/homebrew/install.sh<span class=k>)</span><span class=s2>&#34;</span>
@@ -30,6 +31,7 @@ brew --prefix xacc
 </span><span class=s2>  q.print();
 </span><span class=s2>}  &#34;</span> <span class=p>|</span> qcor -qpu qpp -shots <span class=m>1024</span> -x c++ -
 ./a.out
+</code></pre></div><p>If you are going to use the Python API, you&rsquo;ll need to export your <code>PYTHONPATH</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>export</span> <span class=nv>PYTHONPATH</span><span class=o>=</span><span class=k>$(</span>brew --prefix qcor<span class=k>)</span>:<span class=k>$(</span>brew --prefix xacc<span class=k>)</span>:<span class=nv>$PYTHONPATH</span>
 </code></pre></div><p>If the above binary installs do not work for your system, checkout how to
 <a href=/deploy/getting_started/build_from_source/>build from source</a>
 .</p><div class=edit-meta><br><a href=https://github.com/aide-qc/deploy//edit/master/website/content/getting_started/_index.md class=edit-page><i class="fas fa-pen-square"></i>Edit on GitHub</a></div><nav class=pagination><a class="nav nav-prev" href=/deploy/developers/clang_syntax/ title="QCOR Clang Syntax Handler"><i class="fas fa-arrow-left" aria-hidden=true></i>Prev - QCOR Clang Syntax Handler</a>
