@@ -1,3 +1,91 @@
 <!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Quantum JIT (QJIT) - AIDE-QC</title><meta name=description content="Advancing Integrated Development Environments for Quantum Computing"><meta name=generator content="Hugo 0.76.5"><link href=https://aide-qc.github.io/deployindex.xml rel=alternate type=application/rss+xml><link rel=canonical href=https://aide-qc.github.io/deploy/users/qjit/><link rel=stylesheet href=https://aide-qc.github.io/deploy/css/theme.css><script src=https://use.fontawesome.com/releases/v5.0.6/js/all.js></script><link rel=stylesheet href=https://aide-qc.github.io/deploy/css/chroma.min.css><script src=https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js></script><script src=https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js></script><script src=https://aide-qc.github.io/deploy/js/bundle.js></script><style>:root{}</style></head><body><div class=container><header><h1><div><img src=https://aide-qc.github.io/deploy/aide_qc_logo_v3.png width=40px align=absmiddle>
-AIDE-QC</div></h1><p class=description>Advancing Integrated Development Environments for Quantum Computing</p></header><div class=global-menu><nav><ul><li class=parent><a href>Community<i class="fas fa-angle-right"></i></a><ul class=sub-menu><li class=child><a href=https://aideqc.slack.com>AIDE-QC Slack</a></li><li class=child><a href=https://xacc-dev.slack.com>XACC/QCOR Slack</a></li></ul></li><li class=parent><a href=https://github.com/aide-qc>Source<i class="fas fa-angle-right"></i></a><ul class=sub-menu><li class=child><a href=https://ornl-qci.github.io/qcor-api-docs/>QCOR Doxygen</a></li><li class=child><a href=https://ornl-qci.github.io/xacc-api-docs/>XACC Doxygen</a></li><li class=child><a href=https://github.com/aide-qc/qcor>QCOR</a></li><li class=child><a href=https://github.com/aide-qc/xacc>XACC</a></li></ul></li><li><a href=https://github.com/aide-qc/aide-qc/issues>Bugs</a></li><li><a href=http://aide-qc.org>Project Page</a></li></ul></nav></div><div class=content-container><main><h1>Quantum JIT (QJIT)</h1><div class=edit-meta><br><a href=https://github.com/aide-qc/deploy//edit/master/website/content/users/qjit.md class=edit-page><i class="fas fa-pen-square"></i>Edit on GitHub</a></div><nav class=pagination><a class="nav nav-prev" href=/deploy/users/pass_manager/ title="Pass Manager"><i class="fas fa-arrow-left" aria-hidden=true></i>Prev - Pass Manager</a>
-<a class="nav nav-next" href=/deploy/users/quantum_kernels/ title="Quantum Kernels">Next - Quantum Kernels <i class="fas fa-arrow-right" aria-hidden=true></i></a></nav><footer><p class=powered>Powered by <a href=https://gohugo.io>Hugo</a>. Theme by <a href=https://themes.gohugo.io/hugo-theme-techdoc/>TechDoc</a>. Designed by <a href=https://github.com/thingsym/hugo-theme-techdoc>Thingsym</a>.</p></footer></main><div class=sidebar><nav class=slide-menu><ul><li><a href=https://aide-qc.github.io/deploy>Home</a></li><li class=has-sub-menu><a href=/deploy/background/>Background<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/background/qcor/>QCOR C++ Compiler and JIT Engine</a></li><li><a href=/deploy/background/xacc/>XACC Quantum Programming Framework</a></li><li><a href=/deploy/background/project/></a></li></ul></li><li class=has-sub-menu><a href=/deploy/developers/>Developer Guide<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/developers/implement_optimizer/>Implement a new Optimizer</a></li><li><a href=/deploy/developers/clang_syntax/>QCOR Clang Syntax Handler</a></li></ul></li><li class=has-sub-menu><a href=/deploy/getting_started/>Getting Started<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/getting_started/Faq/>Frequently Asked Questions</a></li><li><a href=/deploy/getting_started/build_from_source/>Build Everything from Source</a></li></ul></li><li class="parent has-sub-menu"><a href=/deploy/users/>User Guide<span class="mark opened">-</span></a><ul class=sub-menu><li><a href=/deploy/users/hello_world/>Hello World</a></li><li><a href=/deploy/users/operators/>Operators</a></li><li><a href=/deploy/users/pass_manager/>Pass Manager</a></li><li class=active><a href=/deploy/users/qjit/>Quantum JIT (QJIT)</a></li><li><a href=/deploy/users/quantum_kernels/>Quantum Kernels</a></li><li><a href=/deploy/users/remote_qpu_creds/>Remote QPU Credentials</a></li><li><a href=/deploy/users/tnqvm/>Tensor Network Quantum Virtual Machine</a></li><li><a href=/deploy/users/using_optimizer/>Using an Optimizer</a></li></ul></li></ul></nav><div class=sidebar-footer></div></div></div><a href=# id=backtothetop-fixed class=backtothetop data-backtothetop-duration=600 data-backtothetop-easing=easeOutQuart data-backtothetop-fixed-fadein=1000 data-backtothetop-fixed-fadeout=1000 data-backtothetop-fixed-bottom=10 data-backtothetop-fixed-right=20><span class="fa-layers fa-fw"><i class="fas fa-circle"></i><i class="fas fa-arrow-circle-up"></i></span></a></div></body></html>
+AIDE-QC</div></h1><p class=description>Advancing Integrated Development Environments for Quantum Computing</p></header><div class=global-menu><nav><ul><li class=parent><a href>Community<i class="fas fa-angle-right"></i></a><ul class=sub-menu><li class=child><a href=https://aideqc.slack.com>AIDE-QC Slack</a></li><li class=child><a href=https://xacc-dev.slack.com>XACC/QCOR Slack</a></li></ul></li><li class=parent><a href=https://github.com/aide-qc>Source<i class="fas fa-angle-right"></i></a><ul class=sub-menu><li class=child><a href=https://ornl-qci.github.io/qcor-api-docs/>QCOR Doxygen</a></li><li class=child><a href=https://ornl-qci.github.io/xacc-api-docs/>XACC Doxygen</a></li><li class=child><a href=https://github.com/aide-qc/qcor>QCOR</a></li><li class=child><a href=https://github.com/aide-qc/xacc>XACC</a></li></ul></li><li><a href=https://github.com/aide-qc/aide-qc/issues>Bugs</a></li><li><a href=http://aide-qc.org>Project Page</a></li></ul></nav></div><div class=content-container><main><h1>Quantum JIT (QJIT)</h1><p>The quantum kernel programming model in C++ for the AIDE-QC stack relies on a novel
+Clang plugin interface called the
+<a href=/deploy/developers/clang_syntax/>SyntaxHandler</a>
+. This infrastructure
+enables quantum programming with annotated C++ functions in a language agnostic manner. A downside to
+this is that quantum kernels are defined at compile-time and are therefore less-flexible for use cases
+where runtime-generated circuits are useful.</p><p>To address this, we have put forward an infrastructure for just-in-time compilation of quantum kernels.
+This infrastructure enables one to programmatically run the <code>SyntaxHandler</code> workflow and compile
+the resultant C++ API code to an LLVM
+<a href=https://llvm.org/doxygen/classllvm_1_1Module.html>Module</a>
+. This <code>Module</code>
+is used as input to the LLVM JIT infrastructure which enables us to create function pointers to
+compiled quantum kernels at runtime.</p><p>We have packaged this infrastructure into a simple, easy-to-use <code>QJIT</code> class. This class exposes a <code>jit_compile()</code>
+method that takes C++ quantum kernels and executes the entire <code>SyntaxHandler</code> -> LLVM IR &ndash;> LLVM JIT workflow.</p><p>Let&rsquo;s demonstrate how one might use this in C++:</p><div class=highlight><pre class=chroma><code class=language-cpp data-lang=cpp><span class=c1>// To use the QCOR JIT utilities 
+</span><span class=c1>// just include the qcor_jit.hpp header
+</span><span class=c1></span><span class=cp>#include</span> <span class=cpf>&#34;qcor_jit.hpp&#34;</span><span class=cp>
+</span><span class=cp></span>
+<span class=kt>int</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+
+  <span class=c1>// QJIT is the entry point to QCOR quantum kernel 
+</span><span class=c1></span>  <span class=c1>// just in time compilation
+</span><span class=c1></span>  <span class=n>QJIT</span> <span class=n>qjit</span><span class=p>;</span>
+
+  <span class=c1>// Define a quantum kernel string dynamically
+</span><span class=c1></span>  <span class=k>const</span> <span class=k>auto</span> <span class=n>kernel_src</span> <span class=o>=</span> <span class=n>R</span><span class=s>&#34;#(__qpu__ void bell(qreg q) {</span>
+        <span class=k>using</span> <span class=n>qcor</span><span class=o>::</span><span class=n>openqasm</span><span class=p>;</span>
+        <span class=n>h</span> <span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>];</span>
+        <span class=n>cx</span> <span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=mi>1</span><span class=p>];</span>
+        <span class=n>creg</span> <span class=n>c</span><span class=p>[</span><span class=mi>2</span><span class=p>];</span>
+        <span class=n>measure</span> <span class=n>q</span> <span class=o>-&gt;</span> <span class=n>c</span><span class=p>;</span>
+    <span class=p>})</span><span class=err>#</span><span class=s>&#34;;</span>
+
+  <span class=c1>// Use the QJIT instance to compile this at runtime
+</span><span class=c1></span>  <span class=n>qjit</span><span class=p>.</span><span class=n>jit_compile</span><span class=p>(</span><span class=n>kernel_src</span><span class=p>);</span>
+
+  <span class=c1>// Now, one can get the compiled kernel as a 
+</span><span class=c1></span>  <span class=c1>// functor to execute, must provide the kernel 
+</span><span class=c1></span>  <span class=c1>// argument types as template parameters
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>bell_functor</span> <span class=o>=</span> <span class=n>qjit</span><span class=p>.</span><span class=n>get_kernel</span><span class=o>&lt;</span><span class=n>qreg</span><span class=o>&gt;</span><span class=p>(</span><span class=s>&#34;bell&#34;</span><span class=p>);</span>
+
+  <span class=c1>// Allocate some qubits and run the kernel functor
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+  <span class=n>bell_functor</span><span class=p>(</span><span class=n>q</span><span class=p>);</span>
+  <span class=n>q</span><span class=p>.</span><span class=n>print</span><span class=p>();</span>
+
+  <span class=c1>// Or, one can call the QJIT invoke method 
+</span><span class=c1></span>  <span class=c1>// with the name of the kernel function and 
+</span><span class=c1></span>  <span class=c1>// the necessary function arguments.
+</span><span class=c1></span>  <span class=k>auto</span> <span class=n>r</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+  <span class=n>qjit</span><span class=p>.</span><span class=n>invoke</span><span class=p>(</span><span class=s>&#34;bell&#34;</span><span class=p>,</span> <span class=n>r</span><span class=p>);</span>
+  <span class=n>r</span><span class=p>.</span><span class=n>print</span><span class=p>();</span>
+
+  <span class=c1>// Note, if QCOR QJIT has not seen this kernel 
+</span><span class=c1></span>  <span class=c1>// source code before, it will run through the 
+</span><span class=c1></span>  <span class=c1>// entire JIT compile process. If you have run 
+</span><span class=c1></span>  <span class=c1>// this JIT compile before, QCOR QJIT will read a 
+</span><span class=c1></span>  <span class=c1>// cached representation of the kernel and load that, 
+</span><span class=c1></span>  <span class=c1>// increasing JIT compile performance. 
+</span><span class=c1></span><span class=p>}</span>
+</code></pre></div><p>The <code>QJIT</code> class is provided by the <code>qcor_jit.hpp</code> header. Programmers simply instantiate the data structure, define the kernel source code string, and
+invoke the <code>jit_compile</code> method. This will internally store pointers to the compiled quantum kernel functions, which you can access via the <code>get_kernel&lt;T...>(name:string)</code> method, which takes the argument types and the name of the kernel. This function pointer can be called just like one would call a pre-defined quantum kernel funciton. One can also use the <code>invoke(name:string, args:T...)</code> method, which will invoke the internal function pointer with the given arguments.</p><p>A key feature of this workflow is that all compiled kernel LLVM IR <code>Modules</code> are cached. This means that after the first <code>jit_compile</code> call for a given kernel string, the resultant <code>Module</code> bitcode will be stored and associated with a unique hash for the kernel source string. Everytime this code is run again, the execution time will be faster because internally we will load the cached <code>Module</code> instead of going through the entire compile workflow.</p><p>One can also use this infrastructure from Python:</p><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=kn>from</span> <span class=nn>qcor</span> <span class=kn>import</span> <span class=n>QJIT</span><span class=p>,</span> <span class=n>qreg</span><span class=p>,</span> <span class=n>qalloc</span>
+
+<span class=c1># Instantiate the QJIT</span>
+<span class=n>qjit</span> <span class=o>=</span> <span class=n>QJIT</span><span class=p>()</span>
+
+<span class=c1># Define your kernel source</span>
+<span class=n>kernel_src</span> <span class=o>=</span> <span class=s1>&#39;&#39;&#39;__qpu__ void bell(qreg q) {
+</span><span class=s1>        using qcor::openqasm;
+</span><span class=s1>        h q[0];
+</span><span class=s1>        cx q[0], q[1];
+</span><span class=s1>        creg c[2];
+</span><span class=s1>        measure q -&gt; c;
+</span><span class=s1>    }&#39;&#39;&#39;</span>
+
+<span class=c1># JIT Compile</span>
+<span class=n>qjit</span><span class=o>.</span><span class=n>jit_compile</span><span class=p>(</span><span class=n>kernel_src</span><span class=p>)</span>
+
+<span class=c1># Invoke the kernel.</span>
+<span class=c1># Note, in Python we have to provide the args as </span>
+<span class=c1># a dict, where keys have to match the arg </span>
+<span class=c1># name in the kernel source</span>
+<span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>2</span><span class=p>)</span>
+<span class=n>qjit</span><span class=o>.</span><span class=n>invoke</span><span class=p>(</span><span class=s1>&#39;bell&#39;</span><span class=p>,</span> <span class=p>{</span><span class=s1>&#39;q&#39;</span><span class=p>:</span><span class=n>q</span><span class=p>})</span>
+<span class=n>q</span><span class=o>.</span><span class=k>print</span><span class=p>()</span>
+
+<span class=c1># You could also view the re-written C++ src</span>
+<span class=n>kernel_name</span><span class=p>,</span> <span class=n>cpp_src</span> <span class=o>=</span> <span class=n>qjit</span><span class=o>.</span><span class=n>run_syntax_handler</span><span class=p>(</span><span class=n>kernel_src</span><span class=p>)</span>
+<span class=k>print</span><span class=p>(</span><span class=n>cpp_src</span><span class=p>)</span>
+</code></pre></div><div class=edit-meta><br><a href=https://github.com/aide-qc/deploy//edit/master/website/content/users/qjit.md class=edit-page><i class="fas fa-pen-square"></i>Edit on GitHub</a></div><nav class=pagination><a class="nav nav-prev" href=/deploy/users/pass_manager/ title="Pass Manager"><i class="fas fa-arrow-left" aria-hidden=true></i>Prev - Pass Manager</a>
+<a class="nav nav-next" href=/deploy/users/quantum_kernels/ title="Quantum Kernels">Next - Quantum Kernels <i class="fas fa-arrow-right" aria-hidden=true></i></a></nav><footer><p class=powered>Powered by <a href=https://gohugo.io>Hugo</a>. Theme by <a href=https://themes.gohugo.io/hugo-theme-techdoc/>TechDoc</a>. Designed by <a href=https://github.com/thingsym/hugo-theme-techdoc>Thingsym</a>.</p></footer></main><div class=sidebar><nav class=slide-menu><ul><li><a href=https://aide-qc.github.io/deploy>Home</a></li><li class=has-sub-menu><a href=/deploy/background/>Background<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/background/qcor/>QCOR C++ Compiler and JIT Engine</a></li><li><a href=/deploy/background/xacc/>XACC Quantum Programming Framework</a></li><li><a href=/deploy/background/project/></a></li></ul></li><li class=has-sub-menu><a href=/deploy/developers/>Developer Guide<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/developers/implement_optimizer/>Implement a new Optimizer</a></li><li><a href=/deploy/developers/clang_syntax/>QCOR Clang Syntax Handler</a></li></ul></li><li class=has-sub-menu><a href=/deploy/getting_started/>Getting Started<span class="mark closed">+</span></a><ul class=sub-menu><li><a href=/deploy/getting_started/Faq/>Frequently Asked Questions</a></li><li><a href=/deploy/getting_started/build_from_source/>Build Everything from Source</a></li></ul></li><li class="parent has-sub-menu"><a href=/deploy/users/>User Guide<span class="mark opened">-</span></a><ul class=sub-menu><li><a href=/deploy/users/hello_world/>Hello World</a></li><li><a href=/deploy/users/operators/>Operators</a></li><li><a href=/deploy/users/pass_manager/>Pass Manager</a></li><li class=active><a href=/deploy/users/qjit/>Quantum JIT (QJIT)</a></li><li><a href=/deploy/users/quantum_kernels/>Quantum Kernels</a></li><li><a href=/deploy/users/remote_qpu_creds/>Remote QPU Credentials</a></li><li><a href=/deploy/users/tnqvm/>Tensor Network Quantum Virtual Machine</a></li><li><a href=/deploy/users/using_optimizer/>Using an Optimizer</a></li><li><a href=/deploy/users/variational/>Variational Algorithms</a></li></ul></li></ul></nav><div class=sidebar-footer></div></div></div><a href=# id=backtothetop-fixed class=backtothetop data-backtothetop-duration=600 data-backtothetop-easing=easeOutQuart data-backtothetop-fixed-fadein=1000 data-backtothetop-fixed-fadeout=1000 data-backtothetop-fixed-bottom=10 data-backtothetop-fixed-right=20><span class="fa-layers fa-fw"><i class="fas fa-circle"></i><i class="fas fa-arrow-circle-up"></i></span></a></div></body></html>
