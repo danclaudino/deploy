@@ -5,53 +5,14 @@ with a detailed explanation of the failure you observed.</p></blockquote><h2 id=
 sudo wget -qO- <span class=s2>&#34;https://aide-qc.github.io/deploy/aide_qc/debian/</span><span class=k>$(</span>lsb_release -cs<span class=k>)</span><span class=s2>/aide-qc.list&#34;</span> &gt; /etc/apt/sources.list.d/aide-qc.list
 sudo apt-get update
 </code></pre></div><p>Note that the above requires you have <code>lsb_release</code> installed (usually is, if not, <code>sudo apt-get install lsb-release</code>).</p><p>Now one can install <code>qcor</code> which will give you the entire AIDE-QC stack:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>sudo apt-get install qcor
-</code></pre></div><p>Test out your install by compiling and executing the following simple <code>qcor</code> code:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>printf</span> <span class=s2>&#34;__qpu__ void f(qreg q) {
-</span><span class=s2>  H(q[0]);
-</span><span class=s2>  Measure(q[0]);
-</span><span class=s2>}
-</span><span class=s2>int main() {
-</span><span class=s2>  auto q = qalloc(1);
-</span><span class=s2>  f(q);
-</span><span class=s2>  q.print();
-</span><span class=s2>}  &#34;</span> <span class=p>|</span> qcor -qpu qpp -shots <span class=m>1024</span> -x c++ -
-./a.out
 </code></pre></div><p>If you are going to use the Python API, you&rsquo;ll need to export your <code>PYTHONPATH</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>export</span> <span class=nv>PYTHONPATH</span><span class=o>=</span>/usr/local/xacc:<span class=nv>$PYTHONPATH</span>
-</code></pre></div><p>Test out the Python API by putting the following script in a <code>bell.py</code> file:</p><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=kn>from</span> <span class=nn>qcor</span> <span class=kn>import</span> <span class=n>qjit</span><span class=p>,</span> <span class=n>qalloc</span><span class=p>,</span> <span class=n>qreg</span>
-
-<span class=c1># Define a Bell kernel</span>
-<span class=nd>@qjit</span>
-<span class=k>def</span> <span class=nf>bell</span><span class=p>(</span><span class=n>q</span> <span class=p>:</span> <span class=n>qreg</span><span class=p>):</span>
-    <span class=n>H</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>])</span>
-    <span class=n>CX</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>q</span><span class=p>[</span><span class=mi>1</span><span class=p>])</span>
-    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>q</span><span class=o>.</span><span class=n>size</span><span class=p>()):</span>
-        <span class=n>Measure</span><span class=p>(</span><span class=n>q</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
-
-<span class=c1># Allocate 2 qubits</span>
-<span class=n>q</span> <span class=o>=</span> <span class=n>qalloc</span><span class=p>(</span><span class=mi>2</span><span class=p>)</span>
-
-<span class=c1># Run the bell experiment</span>
-<span class=n>bell</span><span class=p>(</span><span class=n>q</span><span class=p>)</span>
-
-<span class=c1># Print the results</span>
-<span class=n>q</span><span class=o>.</span><span class=k>print</span><span class=p>()</span>
-</code></pre></div><p>Run with</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>python3 bell.py -qpu qpp -shots <span class=m>1024</span>
-<span class=o>{</span>
-    <span class=s2>&#34;AcceleratorBuffer&#34;</span>: <span class=o>{</span>
-        <span class=s2>&#34;name&#34;</span>: <span class=s2>&#34;qrg_nWlrB&#34;</span>,
-        <span class=s2>&#34;size&#34;</span>: 2,
-        <span class=s2>&#34;Information&#34;</span>: <span class=o>{}</span>,
-        <span class=s2>&#34;Measurements&#34;</span>: <span class=o>{</span>
-            <span class=s2>&#34;00&#34;</span>: 517,
-            <span class=s2>&#34;11&#34;</span>: <span class=m>507</span>
-        <span class=o>}</span>
-    <span class=o>}</span>
-<span class=o>}</span>
-</code></pre></div><h3 id=linux-x86_64-and-mac-os-x-1014-and-1015>Linux x86_64 and Mac OS X 10.14 and 10.15</h3><p>First install
+</code></pre></div><p>We recommend you add this to your <code>.bashrc</code> or <code>.bash_profile</code>.</p><h3 id=linux-x86_64-and-mac-os-x-1014-and-1015>Linux x86_64 and Mac OS X 10.14 and 10.15</h3><p>First install
 <a href=https://brew.sh>Homebrew</a>
 . The Homebrew homepage provides a single command to do this, it is extremely straightforward. Next. run the following command from your local terminal:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>/bin/bash -c <span class=s2>&#34;</span><span class=k>$(</span>curl -fsSL https://raw.githubusercontent.com/aide-qc/deploy/master/aide_qc/homebrew/install.sh<span class=k>)</span><span class=s2>&#34;</span>
 </code></pre></div><p>This will install the AIDE-QC software stack. You will have the <code>qcor</code> compiler, the underlying <code>xacc</code> framework, as well as pertinent Python bindings. The install locations for <code>xacc</code> and <code>qcor</code> can be queried using <code>brew</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>brew --prefix qcor
 brew --prefix xacc
-</code></pre></div><p>Test out your install by compiling and executing the following simple <code>qcor</code> code:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>printf</span> <span class=s2>&#34;__qpu__ void f(qreg q) {
+</code></pre></div><p>If you are going to use the Python API, you&rsquo;ll need to export your <code>PYTHONPATH</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>export</span> <span class=nv>PYTHONPATH</span><span class=o>=</span><span class=k>$(</span>brew --prefix qcor<span class=k>)</span>:<span class=k>$(</span>brew --prefix xacc<span class=k>)</span>:<span class=nv>$PYTHONPATH</span>
+</code></pre></div><p>We recommend you add this to your <code>.bashrc</code> or <code>.bash_profile</code>.</p><h2 id=test-out-your-install>Test out your install</h2><p>Test out your install by compiling and executing the following simple <code>qcor</code> code:</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>printf</span> <span class=s2>&#34;__qpu__ void f(qreg q) {
 </span><span class=s2>  H(q[0]);
 </span><span class=s2>  Measure(q[0]);
 </span><span class=s2>}
@@ -61,8 +22,7 @@ brew --prefix xacc
 </span><span class=s2>  q.print();
 </span><span class=s2>}  &#34;</span> <span class=p>|</span> qcor -qpu qpp -shots <span class=m>1024</span> -x c++ -
 ./a.out
-</code></pre></div><p>If you are going to use the Python API, you&rsquo;ll need to export your <code>PYTHONPATH</code></p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh><span class=nb>export</span> <span class=nv>PYTHONPATH</span><span class=o>=</span><span class=k>$(</span>brew --prefix qcor<span class=k>)</span>:<span class=k>$(</span>brew --prefix xacc<span class=k>)</span>:<span class=nv>$PYTHONPATH</span>
-</code></pre></div><p>Test out the Python API by putting the following script in a <code>bell.py</code> file:</p><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=kn>from</span> <span class=nn>qcor</span> <span class=kn>import</span> <span class=n>qjit</span><span class=p>,</span> <span class=n>qalloc</span><span class=p>,</span> <span class=n>qreg</span>
+</code></pre></div><p>You can also test out the Python API by putting the following script in a <code>bell.py</code> file:</p><div class=highlight><pre class=chroma><code class=language-python data-lang=python><span class=kn>from</span> <span class=nn>qcor</span> <span class=kn>import</span> <span class=n>qjit</span><span class=p>,</span> <span class=n>qalloc</span><span class=p>,</span> <span class=n>qreg</span>
 
 <span class=c1># Define a Bell kernel</span>
 <span class=nd>@qjit</span>
@@ -80,7 +40,7 @@ brew --prefix xacc
 
 <span class=c1># Print the results</span>
 <span class=n>q</span><span class=o>.</span><span class=k>print</span><span class=p>()</span>
-</code></pre></div><p>Run with</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>python3 bell.py -qpu qpp -shots <span class=m>1024</span>
+</code></pre></div><p>and run it with</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>python3 bell.py -qpu qpp -shots <span class=m>1024</span>
 <span class=o>{</span>
     <span class=s2>&#34;AcceleratorBuffer&#34;</span>: <span class=o>{</span>
         <span class=s2>&#34;name&#34;</span>: <span class=s2>&#34;qrg_nWlrB&#34;</span>,
