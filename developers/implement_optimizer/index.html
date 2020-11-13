@@ -121,13 +121,8 @@ touch rosenbrock.<span class=o>{</span>cpp,py<span class=o>}</span>
 </span><span class=err></span><span class=c># Install to Plugins directory
 </span><span class=c></span><span class=nb>install</span><span class=p>(</span><span class=s>TARGETS</span> <span class=o>${</span><span class=nv>LIBRARY_NAME</span><span class=o>}</span> <span class=s>DESTINATION</span> <span class=o>${</span><span class=nv>XACC_ROOT</span><span class=o>}</span><span class=s>/plugins</span><span class=p>)</span><span class=err>
 </span></code></pre></div><p>The above CMake code is pretty much ubiquitous across all XACC plugin builds. The first crucial part is <code>find_package(XACC)</code> which can be configured or customized with the <code>cmake .. -DXACC_DIR=/path/to/xacc</code> flag. Next we create a shared library containing the compiled <code>mylbfgs_optimizer</code> code, and configure it as a plugin with appropriate <code>usfunction*</code> calls (from the underlying <code>CppMicroServices</code> infrastructure). We link the library to the <code>xacc::xacc</code> target, configure the <code>RPATH</code> such that it can link to the install <code>lib/</code> directory, and install to the plugin storage directory.</p><p>To build this we run (from the top-level of the project directory)</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>mkdir build <span class=o>&amp;&amp;</span> <span class=nb>cd</span> build 
-cmake .. -G Ninja -DXACC_DIR<span class=o>=</span><span class=nv>$HOME</span>/.xacc
+cmake .. -G Ninja -DXACC_DIR<span class=o>=</span><span class=k>$(</span>qcor -xacc-install<span class=k>)</span>
 cmake --build . --target install
-
-<span class=c1># Note - if you installed the AIDE-QC stack via `apt-get` or Homebrew installers, you should use </span>
-
--DXACC_DIR<span class=o>=</span>/usr/local/xacc <span class=o>(</span>apt-get<span class=o>)</span>
--DXACC_DIR<span class=o>=</span><span class=k>$(</span>brew --prefix xacc<span class=k>)</span> <span class=o>(</span>homebrew<span class=o>)</span>
 </code></pre></div><p>Now a quick and easy way to test that your <code>Optimizer</code> is installed and available (even though we haven&rsquo;t implemented <code>optimize()</code> yet) is start the interactive Python interpreter and run the following commands to see the name <code>my-lbfgs</code> printed.</p><div class=highlight><pre class=chroma><code class=language-sh data-lang=sh>$ python3
 Python 3.8.6 <span class=o>(</span>default, Oct <span class=m>10</span> 2020, 07:54:55<span class=o>)</span> 
 <span class=o>[</span>GCC 5.4.0 20160609<span class=o>]</span> on linux
